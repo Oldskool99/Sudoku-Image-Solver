@@ -2,7 +2,50 @@ import cv2
 import numpy as np
 import imutils
 
+path =  'C:/Users/Oldskool/Desktop/Resume Projects/'  
+
+
+
 webcam = cv2.VideoCapture(0)
+
+original_board =[
+
+    [0,0,0,0,0,0,0,0,0],
+    [0,1,2,4,0,8,3,5,0],
+    [0,5,0,2,0,6,0,4,0],
+    [0,4,7,1,0,2,5,8,0],
+    [0,0,1,0,0,0,7,0,0],
+    [0,3,8,9,0,5,4,1,0],
+    [0,9,0,3,0,4,0,7,0],
+    [0,7,4,6,0,1,2,3,0],
+    [0,0,0,0,0,0,0,0,0]
+    ]
+
+
+solved_board = [
+
+    [4,8,9,5,3,7,6,2,1],
+    [6,1,2,4,9,8,3,5,7],
+    [7,5,3,2,1,6,9,4,8],
+    [9,4,7,1,6,2,5,8,3],
+    [5,6,1,8,4,3,7,9,2],
+    [2,3,8,9,7,5,4,1,6],
+    [1,9,6,3,2,4,8,7,5],
+    [8,7,4,6,5,1,2,3,9],
+    [3,2,5,7,8,9,1,6,4]
+]
+
+for i in range (0,9):
+    for j in range (0,9):
+        if original_board[i][j] == solved_board[i][j]:
+            solved_board[i][j] = ""
+
+
+print (solved_board)
+
+transformed_board = solved_board [::-1]
+
+print (transformed_board)
 
     
 
@@ -96,15 +139,65 @@ while True:
         
         cv2.imshow('Transformed Capture', warp) 
         
+        cv2.imshow('Transformed Capture', binary_Image(warp))
+        
+        if key == ord('s'): 
+                cv2.imwrite( path+ 'threshPic.jpg', img=warp)
+                webcam.release()
+                cv2.destroyAllWindows()
+                print("Image saved!")
+                
+                break
+            
+               
+        
        
-        lines = cv2.HoughLinesP(binary_Image(warp),1,np.pi/180,100,minLineLength=100,maxLineGap=10)
+        """lines = cv2.HoughLinesP(binary_Image(warp),1,np.pi/180,100,minLineLength=100,maxLineGap=10)
         
         if lines is not None:
             for line in lines:
                 x1,y1,x2,y2 = line[0]
                 cv2.line(warp,(x1,y1),(x2,y2),(0,255,0),2)
             
-            cv2.imshow('HoughP Transform', warp)
+            cv2.imshow('HoughP Transform', warp)"""
+            
+            
+        
+        
+        
+        
+        
+        
+        x3 = rect[3, 0]
+        y3 = rect[3, 1]
+        
+        x2 = rect[2, 0]
+        y2 = rect[2, 1]
+        
+        x1 = rect[1, 0]
+        y1 = rect[1, 1]
+        
+        x = rect [0, 0]
+        y = rect [0, 1]
+        
+        increment_width_hori = (x2-x3+x1-x)/18
+        increment_height_hori = (y2-y3+y1-y)/18
+        
+        increment_width_verti = (x-x3+x1-x2)/18
+        increment_height_verti = (y-y3+y1-y2)/18
+        
+        count = 0
+        
+        
+        
+        for j in range (0,9):  
+            for i in range (0,9):
+                cv2.putText (frame, str(transformed_board[j][i]) , (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))), int(round(y3+(increment_height_hori*i)+(increment_height_verti*j)))), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0),1)
+                count =+ 1
+            
+        cv2.imshow ("text", frame)
+        
+        
         
     
     if key == 27:
@@ -112,6 +205,8 @@ while True:
     
 webcam.release()
 cv2.destroyAllWindows()
+
+
 
 
 
