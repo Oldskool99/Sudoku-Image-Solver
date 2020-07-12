@@ -3,10 +3,12 @@ import numpy as np
 import imutils
 import tensorflow as tf
 from digit_recognizer import scan_sudoku
+from Sudoku import solve
+from Sudoku import print_board
 
-model = tf.keras.models.load_model('digit-recognizer.h5')
-# path = 'C:/Users/Oldskool/Desktop/Resume Projects/'
-path = '/home/arch/Desktop'
+model = tf.keras.models.load_model('model/digit-recognizer.h5')
+path = 'C:/Users/Oldskool/Desktop/Resume Projects/'
+#path = '/home/arch/Desktop'
 
 
 webcam = cv2.VideoCapture(0)
@@ -38,17 +40,8 @@ solved_board = [
     [3, 2, 5, 7, 8, 9, 1, 6, 4]
 ]
 
-for i in range(0, 9):
-    for j in range(0, 9):
-        if original_board[i][j] == solved_board[i][j]:
-            solved_board[i][j] = ""
 
 
-# print(solved_board)
-
-transformed_board = solved_board[::-1]
-
-# print(transformed_board)
 
 
 def binary_Image(a):
@@ -170,15 +163,38 @@ while True:
 
         count = 0
 
+        
+        #original_board = scan_sudoku(binary_Image(warp), model)
+        
+        #print(original_board)
+        
+        #solved_board = original_board
+        
+        if solved_board is not None:
+            solve(solved_board)
+            
+            for i in range(0, 9):
+                for j in range(0, 9):
+                    if original_board[i][j] == solved_board[i][j]:
+                        solved_board[i][j] = 0
+    
+            
+            transformed_board = solved_board[::-1]
+            
+        
         for j in range(0, 9):
             for i in range(0, 9):
-                # cv2.putText(frame, str(transformed_board[j][i]), (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))), int(
-                #     round(y3+(increment_height_hori*i)+(increment_height_verti*j)))), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+                cv2.putText(frame, str(transformed_board[j][i]), (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))), int(round(y3+(increment_height_hori*i)+(increment_height_verti*j)))), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
                 count = + 1
 
+        
         cv2.imshow("text", frame)
-        scanned_digits = scan_sudoku(binary_Image(warp), model)
-        print(scanned_digits)
+        
+
+        
+        
+        #print_board (original_board)
+        #print_board (solved_board)
 
     if key == 27:
         break
