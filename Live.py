@@ -3,8 +3,8 @@ import numpy as np
 import imutils
 import tensorflow as tf
 from digit_recognizer import scan_sudoku
-from Sudoku import solve
-from Sudoku import print_board
+from sudoku import solveSudoku
+# from Sudoku import print_board
 
 model = tf.keras.models.load_model('model/digit-recognizer.h5')
 path = 'C:/Users/Oldskool/Desktop/Resume Projects/'
@@ -39,9 +39,6 @@ solved_board = [
     [8, 7, 4, 6, 5, 1, 2, 3, 9],
     [3, 2, 5, 7, 8, 9, 1, 6, 4]
 ]
-
-
-
 
 
 def binary_Image(a):
@@ -126,22 +123,15 @@ while True:
 
         cv2.imshow('Transformed Capture', binary_Image(warp))
 
-        if key == ord('s'):
-            cv2.imwrite(path + 'threshPic.jpg', img=warp)
-            webcam.release()
-            cv2.destroyAllWindows()
-            print("Image saved!")
+        lines = cv2.HoughLinesP(binary_Image(
+            warp), 1, np.pi/180, 100, minLineLength=100, maxLineGap=10)
 
-            break
-
-        """lines = cv2.HoughLinesP(binary_Image(warp),1,np.pi/180,100,minLineLength=100,maxLineGap=10)
-        
         if lines is not None:
             for line in lines:
-                x1,y1,x2,y2 = line[0]
-                cv2.line(warp,(x1,y1),(x2,y2),(0,255,0),2)
-            
-            cv2.imshow('HoughP Transform', warp)"""
+                x1, y1, x2, y2 = line[0]
+                # cv2.line(warp, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+            cv2.imshow('HoughP Transform', warp)
 
         x3 = rect[3, 0]
         y3 = rect[3, 1]
@@ -161,40 +151,35 @@ while True:
         increment_width_verti = (x-x3+x1-x2)/18
         increment_height_verti = (y-y3+y1-y2)/18
 
-        count = 0
+        if key == ord('s'):
+            cv2.imwrite(path + 'sudokuImage.jpg', img=warp)
+            webcam.release()
+            cv2.destroyAllWindows()
+            print("Image saved!")
 
-        
-        #original_board = scan_sudoku(binary_Image(warp), model)
-        
-        #print(original_board)
-        
+        original_board = scan_sudoku(warp, model)
+
+        # print(original_board)
+
         #solved_board = original_board
-        
-        if solved_board is not None:
-            solve(solved_board)
-            
+
+        if original_board is not None:
+            solveSudoku(solved_board)
+
             for i in range(0, 9):
                 for j in range(0, 9):
                     if original_board[i][j] == solved_board[i][j]:
                         solved_board[i][j] = 0
-    
-            
-            transformed_board = solved_board[::-1]
-            
-        
-        for j in range(0, 9):
-            for i in range(0, 9):
-                cv2.putText(frame, str(transformed_board[j][i]), (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))), int(round(y3+(increment_height_hori*i)+(increment_height_verti*j)))), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
-                count = + 1
 
-        
+            # transformed_board = solved_board[::-1]
+            transformed_board = original_board[::-1]
+
+            for j in range(0, 9):
+                for i in range(0, 9):
+                    cv2.putText(frame, str(int(transformed_board[j][i])), (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))), int(
+                        round(y3+(increment_height_hori*i)+(increment_height_verti*j)))), cv2.FONT_HERSHEY_SIMPLEX, 1, (50, 50, 50), thickness=2)
+
         cv2.imshow("text", frame)
-        
-
-        
-        
-        #print_board (original_board)
-        #print_board (solved_board)
 
     if key == 27:
         break
