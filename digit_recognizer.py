@@ -3,9 +3,6 @@ import cv2
 import tensorflow as tf
 import numpy as np
 from scipy.ndimage import center_of_mass
-# from sudoku import solveSudoku
-
-# model = tf.keras.models.load_model('digit-recognizer.h5')
 
 
 def largest_connected_component(img):
@@ -63,8 +60,6 @@ def model_input_format(img, image_size):
     Output:
     processed_img: Image array in the format accepted by tensorflow model
     """
-    # processed_img = tf.expand_dims(tf.reshape(
-    #     img, (image_size[0], image_size[1], 1)), 0)
     processed_img = tf.reshape(
         img, (image_size[0], image_size[1], 1))
     return processed_img
@@ -171,13 +166,13 @@ def scan_sudoku(img, model, image_size=(28, 28)):
             predictions = model.predict(image_array)
             count = 0
             for (i, j) in index_array:
-                result_array[i][j] = np.argmax(predictions[count])
+                result_array[i][j] = int(np.argmax(predictions[count]))
                 result_max[i][j] = np.max(predictions[count])
                 count += 1
             if result_array.sum() > 0:
                 if np.true_divide(result_max.sum(), np.count_nonzero(result_max)) > 0.95:
-                    print("Probability: {}".format(np.true_divide(
-                        result_max.sum(), np.count_nonzero(result_max))))
+                    # print("Probability: {}".format(np.true_divide(
+                    #     result_max.sum(), np.count_nonzero(result_max))))
                     return result_array
             else:
                 pass
@@ -185,18 +180,3 @@ def scan_sudoku(img, model, image_size=(28, 28)):
         pass
     except TypeError:
         pass
-
-
-# if __name__ == "__main__":
-#     model = tf.keras.models.load_model('model/digit-recognizer.h5')
-#     image = cv2.imread('./sudokuImage.jpg')
-#     cv2.imwrite('./result.jpg', image)
-#     result = scan_sudoku(image, model)
-#     image = image_transform(image)
-#     print(result)
-    # cv2.imwrite('./sudoku.jpg', image)
-    # result = crop_image(image, 1, 3, image.shape[0], image.shape[1], (28, 28))
-    # cv2.imwrite('./result.jpg', result)
-    # print(np.argmax(model.predict(model_input_format(result, (28, 28)))))
-    # print(model.predict(model_input_format(result, (28, 28))))
-    # solveSudoku(result)
