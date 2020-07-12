@@ -3,54 +3,56 @@ import numpy as np
 import imutils
 import tensorflow as tf
 from digit_recognizer import scan_sudoku
-from sudoku import solveSudoku
+# from sudoku import solveSudoku
 # from Sudoku import print_board
+import sudoku
 
-model = tf.keras.models.load_model('model/digit-recognizer.h5')
+model = tf.keras.models.load_model('model/Digit_Recognizer.h5')
+# model = tf.keras.models.load_model('model/mnist')
 path = 'C:/Users/Oldskool/Desktop/Resume Projects/'
-#path = '/home/arch/Desktop'
+# path = '/home/arch/Desktop'
 
 
 webcam = cv2.VideoCapture(0)
 
-original_board = [
+# original_board = [
 
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 2, 4, 0, 8, 3, 5, 0],
-    [0, 5, 0, 2, 0, 6, 0, 4, 0],
-    [0, 4, 7, 1, 0, 2, 5, 8, 0],
-    [0, 0, 1, 0, 0, 0, 7, 0, 0],
-    [0, 3, 8, 9, 0, 5, 4, 1, 0],
-    [0, 9, 0, 3, 0, 4, 0, 7, 0],
-    [0, 7, 4, 6, 0, 1, 2, 3, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0]
-]
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
+#     [0, 1, 2, 4, 0, 8, 3, 5, 0],
+#     [0, 5, 0, 2, 0, 6, 0, 4, 0],
+#     [0, 4, 7, 1, 0, 2, 5, 8, 0],
+#     [0, 0, 1, 0, 0, 0, 7, 0, 0],
+#     [0, 3, 8, 9, 0, 5, 4, 1, 0],
+#     [0, 9, 0, 3, 0, 4, 0, 7, 0],
+#     [0, 7, 4, 6, 0, 1, 2, 3, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 0, 0]
+# ]
 
 
-solved_board = [
+# solved_board = [
 
-    [4, 8, 9, 5, 3, 7, 6, 2, 1],
-    [6, 1, 2, 4, 9, 8, 3, 5, 7],
-    [7, 5, 3, 2, 1, 6, 9, 4, 8],
-    [9, 4, 7, 1, 6, 2, 5, 8, 3],
-    [5, 6, 1, 8, 4, 3, 7, 9, 2],
-    [2, 3, 8, 9, 7, 5, 4, 1, 6],
-    [1, 9, 6, 3, 2, 4, 8, 7, 5],
-    [8, 7, 4, 6, 5, 1, 2, 3, 9],
-    [3, 2, 5, 7, 8, 9, 1, 6, 4]
-]
+#     [4, 8, 9, 5, 3, 7, 6, 2, 1],
+#     [6, 1, 2, 4, 9, 8, 3, 5, 7],
+#     [7, 5, 3, 2, 1, 6, 9, 4, 8],
+#     [9, 4, 7, 1, 6, 2, 5, 8, 3],
+#     [5, 6, 1, 8, 4, 3, 7, 9, 2],
+#     [2, 3, 8, 9, 7, 5, 4, 1, 6],
+#     [1, 9, 6, 3, 2, 4, 8, 7, 5],
+#     [8, 7, 4, 6, 5, 1, 2, 3, 9],
+#     [3, 2, 5, 7, 8, 9, 1, 6, 4]
+# ]
 
 
 def binary_Image(a):
 
     gray = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
-    #cv2.imshow("gray", gray)
+    # cv2.imshow("gray", gray)
 
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    #cv2.imshow("blur", blur)
+    # cv2.imshow("blur", blur)
 
     thresh = cv2.adaptiveThreshold(blur, 255, 1, 1, 11, 2)
-    #cv2.imshow("thresh", thresh)
+    # cv2.imshow("thresh", thresh)
 
     return thresh
 
@@ -60,7 +62,7 @@ while True:
     key = cv2.waitKey(1)
 
     ret, frame = webcam.read()
-    #cv2.imshow ("Live", frame)
+    # cv2.imshow ("Live", frame)
 
     cnts = cv2.findContours(binary_Image(
         frame), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -161,23 +163,30 @@ while True:
 
         # print(original_board)
 
-        #solved_board = original_board
+        solved_board = original_board
 
         if original_board is not None:
-            solveSudoku(solved_board)
+            # solveSudoku(solved_board)
+            solved_board = solved_board.astype(int)
+            original_board = original_board.astype(int)
+            flag = sudoku.solve(solved_board)
+            # solved_board = sudoku.solve(solved_board)
+            # print("Here:{}\n".format(solved_board))
+            # transformed_board = original_board[::-1]
 
-            for i in range(0, 9):
-                for j in range(0, 9):
-                    if original_board[i][j] == solved_board[i][j]:
-                        solved_board[i][j] = 0
-
-            # transformed_board = solved_board[::-1]
-            transformed_board = original_board[::-1]
-
-            for j in range(0, 9):
+            if(sudoku.all_board_non_zero(solved_board)):
+                original_board = original_board.astype(str)
+                solved_board = solved_board.astype(str)
                 for i in range(0, 9):
-                    cv2.putText(frame, str(int(transformed_board[j][i])), (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))), int(
-                        round(y3+(increment_height_hori*i)+(increment_height_verti*j)))), cv2.FONT_HERSHEY_SIMPLEX, 1, (50, 50, 50), thickness=2)
+                    for j in range(0, 9):
+                        if (original_board[i][j]) == (solved_board[i][j]):
+                            print("Here: ({},{})".format(i, j))
+                            solved_board[i][j] = " "
+                transformed_board = solved_board[::-1]
+                for j in range(0, 9):
+                    for i in range(0, 9):
+                        cv2.putText(frame, str(transformed_board[j][i]), (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))), int(
+                            round(y3+(increment_height_hori*i)+(increment_height_verti*j)))), cv2.FONT_HERSHEY_SIMPLEX, 1, (50, 50, 50), thickness=2)
 
         cv2.imshow("text", frame)
 
