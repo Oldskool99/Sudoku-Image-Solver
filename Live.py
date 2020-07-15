@@ -3,44 +3,38 @@ import numpy as np
 import imutils
 import tensorflow as tf
 from digit_recognizer import scan_sudoku
-# from sudoku import solveSudoku
-# from Sudoku import print_board
 import sudoku
 
-model = tf.keras.models.load_model('model/Digit_Recognizer.h5')
-# model = tf.keras.models.load_model('model/mnist')
-path = 'C:/Users/Oldskool/Desktop/Resume Projects/'
-# path = '/home/arch/Desktop'
+model = tf.keras.models.load_model('model/digit-recognizer.h5')
 
 
 webcam = cv2.VideoCapture(0)
 
-# original_board = [
 
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 1, 2, 4, 0, 8, 3, 5, 0],
-#     [0, 5, 0, 2, 0, 6, 0, 4, 0],
-#     [0, 4, 7, 1, 0, 2, 5, 8, 0],
-#     [0, 0, 1, 0, 0, 0, 7, 0, 0],
-#     [0, 3, 8, 9, 0, 5, 4, 1, 0],
-#     [0, 9, 0, 3, 0, 4, 0, 7, 0],
-#     [0, 7, 4, 6, 0, 1, 2, 3, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0]
-# ]
+def print_output(input_board, solution_board, cv2_frame):
+    """
+    Prints solution on CV2 frame
+    Inputs:
+    input_board: Scanned sudoku board
+    solution_board: Solved sudoku board
+    cv2_frame: Output frame to print board
+    """
+    input_board = input_board.astype(str)
+    solution_board = solution_board.astype(str)
+    for i in range(0, 9):
+        for j in range(0, 9):
+            if (input_board[i][j]) == (solution_board[i][j]):
+                solution_board[i][j] = " "
+    transformed_board = solution_board[::-1]
 
-
-# solved_board = [
-
-#     [4, 8, 9, 5, 3, 7, 6, 2, 1],
-#     [6, 1, 2, 4, 9, 8, 3, 5, 7],
-#     [7, 5, 3, 2, 1, 6, 9, 4, 8],
-#     [9, 4, 7, 1, 6, 2, 5, 8, 3],
-#     [5, 6, 1, 8, 4, 3, 7, 9, 2],
-#     [2, 3, 8, 9, 7, 5, 4, 1, 6],
-#     [1, 9, 6, 3, 2, 4, 8, 7, 5],
-#     [8, 7, 4, 6, 5, 1, 2, 3, 9],
-#     [3, 2, 5, 7, 8, 9, 1, 6, 4]
-# ]
+    color = (50, 50, 50)
+    for j in range(0, 9):
+        for i in range(0, 9):
+            text = str(transformed_board[j][i])
+            org = (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))),
+                   int(round(y3+(increment_height_hori*i)+(increment_height_verti*j))))
+            cv2.putText(cv2_frame, text, org,
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, thickness=2)
 
 
 def binary_Image(a):
@@ -121,9 +115,9 @@ while True:
 
         cv2.imshow('Initial Frame', frame)
 
-        cv2.imshow('Transformed Capture', warp)
+        # cv2.imshow('Transformed Capture', warp)
 
-        cv2.imshow('Transformed Capture', binary_Image(warp))
+        # cv2.imshow('Transformed Capture', binary_Image(warp))
 
         lines = cv2.HoughLinesP(binary_Image(
             warp), 1, np.pi/180, 100, minLineLength=100, maxLineGap=10)
@@ -133,7 +127,7 @@ while True:
                 x1, y1, x2, y2 = line[0]
                 # cv2.line(warp, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            cv2.imshow('HoughP Transform', warp)
+            # cv2.imshow('HoughP Transform', warp)
 
         x3 = rect[3, 0]
         y3 = rect[3, 1]
@@ -153,40 +147,25 @@ while True:
         increment_width_verti = (x-x3+x1-x2)/18
         increment_height_verti = (y-y3+y1-y2)/18
 
-        if key == ord('s'):
-            cv2.imwrite(path + 'sudokuImage.jpg', img=warp)
-            webcam.release()
-            cv2.destroyAllWindows()
-            print("Image saved!")
+        detected_board = scan_sudoku(warp, model)
+        solved_board = None
 
-        original_board = scan_sudoku(warp, model)
+        if solved_board is not None:
+            if original_board == detected_board:
+                if sudoku.all_board_non_zero(solved_board):
+                    print_output(original_board, solved_board, frame)
 
-        # print(original_board)
+        original_board = detected_board
 
         solved_board = original_board
 
         if original_board is not None:
-            # solveSudoku(solved_board)
             solved_board = solved_board.astype(int)
             original_board = original_board.astype(int)
-            flag = sudoku.solve(solved_board)
-            # solved_board = sudoku.solve(solved_board)
-            # print("Here:{}\n".format(solved_board))
-            # transformed_board = original_board[::-1]
+            sudoku.solve_sudoku(solved_board)
 
-            if(sudoku.all_board_non_zero(solved_board)):
-                original_board = original_board.astype(str)
-                solved_board = solved_board.astype(str)
-                for i in range(0, 9):
-                    for j in range(0, 9):
-                        if (original_board[i][j]) == (solved_board[i][j]):
-                            print("Here: ({},{})".format(i, j))
-                            solved_board[i][j] = " "
-                transformed_board = solved_board[::-1]
-                for j in range(0, 9):
-                    for i in range(0, 9):
-                        cv2.putText(frame, str(transformed_board[j][i]), (int(round(x3+(increment_width_hori*i)+(increment_width_verti*j))), int(
-                            round(y3+(increment_height_hori*i)+(increment_height_verti*j)))), cv2.FONT_HERSHEY_SIMPLEX, 1, (50, 50, 50), thickness=2)
+            if sudoku.all_board_non_zero(solved_board):
+                print_output(original_board, solved_board, frame)
 
         cv2.imshow("text", frame)
 
