@@ -27,7 +27,7 @@ def print_output(input_board, solution_board, cv2_frame):
                 solution_board[i][j] = " "
     transformed_board = solution_board[::-1]
 
-    color = (50, 50, 50)
+    color = (46, 139,87 )
     for j in range(0, 9):
         for i in range(0, 9):
             text = str(transformed_board[j][i])
@@ -40,13 +40,10 @@ def print_output(input_board, solution_board, cv2_frame):
 def binary_Image(a):
 
     gray = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
-    # cv2.imshow("gray", gray)
 
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    # cv2.imshow("blur", blur)
 
     thresh = cv2.adaptiveThreshold(blur, 255, 1, 1, 11, 2)
-    # cv2.imshow("thresh", thresh)
 
     return thresh
 
@@ -115,9 +112,7 @@ while True:
 
         cv2.imshow('Initial Frame', frame)
 
-        # cv2.imshow('Transformed Capture', warp)
-
-        # cv2.imshow('Transformed Capture', binary_Image(warp))
+       
 
         lines = cv2.HoughLinesP(binary_Image(
             warp), 1, np.pi/180, 100, minLineLength=100, maxLineGap=10)
@@ -125,9 +120,7 @@ while True:
         if lines is not None:
             for line in lines:
                 x1, y1, x2, y2 = line[0]
-                # cv2.line(warp, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-            # cv2.imshow('HoughP Transform', warp)
+                
 
         x3 = rect[3, 0]
         y3 = rect[3, 1]

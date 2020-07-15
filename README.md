@@ -1,6 +1,11 @@
 # Sudoku Image Solver
 
-Real Time Sudoku Solver using Tensorflow and OpenCV.
+Real Time Sudoku Solver using OpenCV, Tensorflow and Backtracking.
+
+## Demo
+<p align="center">
+<img src="./assets/demo.gif" width="720" alt="Demo" />
+</p>
 
 ## Dependencies
 
