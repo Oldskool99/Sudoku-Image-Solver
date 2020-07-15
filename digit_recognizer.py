@@ -82,6 +82,26 @@ def shift_image(img):
     return img
 
 
+def trim_borders(img, ratio=0.6):
+    """
+    Trims borders of images
+    Inputs:
+    img: Input image to be trimmed
+    ratio: Ratio of blank space to filled space
+    Outputs:
+    img: Image with trimmed borders
+    """
+    while np.sum(img[0]) <= (1-ratio) * img.shape[1] * 255:
+        img = img[1:]
+    while np.sum(img[:, -1]) <= (1-ratio) * img.shape[1] * 255:
+        img = np.delete(img, -1, 1)
+    while np.sum(img[:, 0]) <= (1-ratio) * img.shape[0] * 255:
+        img = np.delete(img, 0, 1)
+    while np.sum(img[-1]) <= (1-ratio) * img.shape[0] * 255:
+        img = img[:-1]
+    return img
+
+
 def crop_image(img, i, j, height, width, image_size):
     """
     Crops and processes input image
@@ -96,19 +116,11 @@ def crop_image(img, i, j, height, width, image_size):
     0 if image is empty
     output_image: Image array
     """
-    ratio = 0.6
     offset = math.floor((height + width)/100)
     output_image = img[round(height/9 * i + offset): round(height/9 * (i + 1) - offset),
                        round(width/9 * j + offset): round(width/9 * (j + 1) - offset)]
     output_image = cv2.bitwise_not(output_image)
-    while np.sum(output_image[0]) <= (1-ratio) * output_image.shape[1] * 255:
-        output_image = output_image[1:]
-    while np.sum(output_image[:, -1]) <= (1-ratio) * output_image.shape[1] * 255:
-        output_image = np.delete(output_image, -1, 1)
-    while np.sum(output_image[:, 0]) <= (1-ratio) * output_image.shape[0] * 255:
-        output_image = np.delete(output_image, 0, 1)
-    while np.sum(output_image[-1]) <= (1-ratio) * output_image.shape[0] * 255:
-        output_image = output_image[:-1]
+    output_image = trim_borders(output_image)
     empty_image = cv2.bitwise_not(output_image)
     empty_image = largest_connected_component(empty_image)
     center_width = output_image.shape[1] // 2
@@ -118,9 +130,9 @@ def crop_image(img, i, j, height, width, image_size):
     y_start = center_width // 2
     y_end = center_width // 2 + center_width
     center_region = empty_image[x_start:x_end, y_start:y_end]
-    if center_region.sum() >= center_width * center_height * 240 - 255:
+    if center_region.sum() >= center_width * center_height * 250 - 255:
         return 0
-    if output_image.sum() >= image_size[0]**2*240 - image_size[1] * 1 * 255:
+    if output_image.sum() >= image_size[0]**2*250 - image_size[1] * 1 * 255:
         return 0
     output_image = np.array(output_image)
     output_image = cv2.bitwise_not(output_image)
@@ -157,7 +169,6 @@ def scan_sudoku(img, model, image_size=(28, 28)):
                         result_array[i][j] = 0
                         result_max[i][j] = 0
                     else:
-                        # predictions = model.predict( model_input_format(temp_image, image_size))
                         temp_image = model_input_format(temp_image, image_size)
                         image_array[count] = temp_image
                         index_array.append((i, j))
@@ -171,8 +182,6 @@ def scan_sudoku(img, model, image_size=(28, 28)):
                 count += 1
             if result_array.sum() > 0:
                 if np.true_divide(result_max.sum(), np.count_nonzero(result_max)) > 0.95:
-                    # print("Probability: {}".format(np.true_divide(
-                    #     result_max.sum(), np.count_nonzero(result_max))))
                     return result_array
             else:
                 pass
